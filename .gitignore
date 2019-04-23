@@ -8,6 +8,7 @@ __pycache__/
 
 # Project config files
 .idea/
+.DS_Store/
 
 # Distribution / packaging
 .Python
