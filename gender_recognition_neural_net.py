@@ -7,6 +7,7 @@ from keras.optimizers import SGD
 from keras.layers import Dense
 from keras.utils import np_utils
 from imutils import paths
+import pandas as pd
 import numpy as np
 import argparse
 import cv2
@@ -35,18 +36,28 @@ imagePaths = list(paths.list_images(args["dataset"]))
 data = []
 labels = []
 
+# initialize path to image labels source file
+labels_source_path = ""
+
+# find file with image labels
+for file in os.listdir(args["dataset"]):
+    if file.endswith(".csv"):
+        labels_source_path = os.path.join(args["dataset"], file)
+
+# read csv file with image labels
+df = pd.read_csv(labels_source_path)
+labels = df.Gender
+
 # loop over the input images
 for (i, imagePath) in enumerate(imagePaths):
     # load the image and extract the class label (assuming that our
     # path as the format: /path/to/dataset/{class}.{image_num}.jpg
     image = cv2.imread(imagePath)
-    label = imagePath.split(os.path.sep)[-1].split(".")[0]
 
     # construct a feature vector raw pixel intensities, then update
     # the data matrix and labels list
     features = image_to_feature_vector(image)
     data.append(features)
-    labels.append(label)
 
     # show an update every 1,000 images
     if i > 0 and i % 1000 == 0:
@@ -67,22 +78,22 @@ labels = np_utils.to_categorical(labels, 2)
 # of the data for training and the remaining 25% for testing
 print("[INFO] constructing training/testing split...")
 (trainData, testData, trainLabels, testLabels) = train_test_split(
-	data, labels, test_size=0.25, random_state=42)
+    data, labels, test_size=0.25, random_state=42)
 
 # define the architecture of the network
 model = Sequential()
 model.add(Dense(768, input_dim=3072, init="uniform",
-	activation="relu"))
-model.add(Dense(1))
+                activation="relu"))
+model.add(Dense(2))
 model.add(Activation("softmax"))
 
 # train the model using SGD
 print("[INFO] compiling model...")
 sgd = SGD(lr=0.01)
 model.compile(loss="binary_crossentropy", optimizer=sgd,
-	metrics=["accuracy"])
-model.fit(trainData, trainLabels, epochs=50, batch_size=128,
-	verbose=1)
+              metrics=["accuracy"])
+model.fit(trainData, trainLabels, epochs=5000, batch_size=128,
+          verbose=1)
 
 # show the accuracy on the testing set
 print("[INFO] evaluating on testing set...")

@@ -4,7 +4,6 @@ from keras.models import load_model
 from imutils import paths
 import numpy as np
 import argparse
-import imutils
 import cv2
 
 
@@ -25,7 +24,7 @@ ap.add_argument("-b", "--batch-size", type=int, default=32,
 args = vars(ap.parse_args())
 
 # initialize the class labels for the Kaggle dogs vs cats dataset
-CLASSES = ["cat", "dog"]
+CLASSES = ["female", "male"]
 
 # load the network
 print("[INFO] loading network architecture and weights...")
