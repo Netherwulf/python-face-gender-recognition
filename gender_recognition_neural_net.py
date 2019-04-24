@@ -52,3 +52,45 @@ for (i, imagePath) in enumerate(imagePaths):
     if i > 0 and i % 1000 == 0:
         print("[INFO] processed {}/{}".format(i, len(imagePaths)))
 
+# encode the labels, converting them from strings to integers
+le = LabelEncoder()
+labels = le.fit_transform(labels)
+
+# scale the input image pixels to the range [0, 1], then transform
+# the labels into vectors in the range [0, num_classes] -- this
+# generates a vector for each label where the index of the label
+# is set to `1` and all other entries to `0`
+data = np.array(data) / 255.0
+labels = np_utils.to_categorical(labels, 2)
+
+# partition the data into training and testing splits, using 75%
+# of the data for training and the remaining 25% for testing
+print("[INFO] constructing training/testing split...")
+(trainData, testData, trainLabels, testLabels) = train_test_split(
+	data, labels, test_size=0.25, random_state=42)
+
+# define the architecture of the network
+model = Sequential()
+model.add(Dense(768, input_dim=3072, init="uniform",
+	activation="relu"))
+model.add(Dense(1))
+model.add(Activation("softmax"))
+
+# train the model using SGD
+print("[INFO] compiling model...")
+sgd = SGD(lr=0.01)
+model.compile(loss="binary_crossentropy", optimizer=sgd,
+	metrics=["accuracy"])
+model.fit(trainData, trainLabels, epochs=50, batch_size=128,
+	verbose=1)
+
+# show the accuracy on the testing set
+print("[INFO] evaluating on testing set...")
+(loss, accuracy) = model.evaluate(testData, testLabels,
+                                  batch_size=128, verbose=1)
+print("[INFO] loss={:.4f}, accuracy: {:.4f}%".format(loss,
+                                                     accuracy * 100))
+
+# dump the network architecture and weights to file
+print("[INFO] dumping architecture and weights to file...")
+model.save(args["model"])
