@@ -8,6 +8,8 @@ from keras.layers import Dense
 from keras.utils import np_utils
 from imutils import paths
 import pandas as pd
+from scipy.io import loadmat
+# from mat4py import loadmat
 import numpy as np
 import argparse
 import cv2
@@ -41,12 +43,18 @@ labels_source_path = ""
 
 # find file with image labels
 for file in os.listdir(args["dataset"]):
-    if file.endswith(".csv"):
+    if file.endswith(".mat"):
         labels_source_path = os.path.join(args["dataset"], file)
 
-# read csv file with image labels
-df = pd.read_csv(labels_source_path)
-labels = df.Gender
+# read .mat file with image labels
+labels_file = loadmat(labels_source_path)
+labels = labels_file['imdb'][0][0][3][0]
+
+# print(data['imdb'][0][0][4][0])
+# print(data['imdb'][0][0][3][0])
+# print(len(data['imdb'][0][0][4][0]))
+# print(len(data['imdb'][0][0][3][0]))
+# print(len(imagePaths))
 
 # loop over the input images
 for (i, imagePath) in enumerate(imagePaths):
