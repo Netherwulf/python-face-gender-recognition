@@ -11,6 +11,7 @@ import pandas as pd
 from scipy.io import loadmat
 # from mat4py import loadmat
 import numpy as np
+import random
 import argparse
 import cv2
 import os
@@ -33,6 +34,9 @@ args = vars(ap.parse_args())
 # grab the list of images that we'll be describing
 print("[INFO] describing images...")
 imagePaths = list(paths.list_images(args["dataset"]))
+
+# REDUCING THE NUMBER OF IMAGES BECAUSE OF LACK OF RAM
+imagePaths = imagePaths[:40000]
 
 # initialize the data matrix and labels list
 data = []
@@ -74,6 +78,10 @@ for (i, imagePath) in enumerate(imagePaths):
 # encode the labels, converting them from strings to integers
 le = LabelEncoder()
 labels = le.fit_transform(labels)
+labels = list(map(lambda x: random.choice([0, 1]) if x != 0 and x != 1 else x, labels))
+
+# REDUCING THE NUMBER OF LABELS BECAUSE OF LACK OF RAM
+labels = labels[:40000]
 
 # scale the input image pixels to the range [0, 1], then transform
 # the labels into vectors in the range [0, num_classes] -- this
@@ -100,7 +108,7 @@ print("[INFO] compiling model...")
 sgd = SGD(lr=0.01)
 model.compile(loss="binary_crossentropy", optimizer=sgd,
               metrics=["accuracy"])
-model.fit(trainData, trainLabels, epochs=5000, batch_size=128,
+model.fit(trainData, trainLabels, epochs=50, batch_size=128,
           verbose=1)
 
 # show the accuracy on the testing set
