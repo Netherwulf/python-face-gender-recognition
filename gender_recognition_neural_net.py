@@ -7,9 +7,7 @@ from keras.optimizers import SGD
 from keras.layers import Dense
 from keras.utils import np_utils
 from imutils import paths
-import pandas as pd
 from scipy.io import loadmat
-# from mat4py import loadmat
 import numpy as np
 import random
 import argparse
@@ -35,9 +33,6 @@ args = vars(ap.parse_args())
 print("[INFO] describing images...")
 imagePaths = list(paths.list_images(args["dataset"]))
 
-# REDUCING THE NUMBER OF IMAGES BECAUSE OF LACK OF RAM
-imagePaths = imagePaths[:40000]
-
 # initialize the data matrix and labels list
 data = []
 labels = []
@@ -53,12 +48,6 @@ for file in os.listdir(args["dataset"]):
 # read .mat file with image labels
 labels_file = loadmat(labels_source_path)
 labels = labels_file['imdb'][0][0][3][0]
-
-# print(data['imdb'][0][0][4][0])
-# print(data['imdb'][0][0][3][0])
-# print(len(data['imdb'][0][0][4][0]))
-# print(len(data['imdb'][0][0][3][0]))
-# print(len(imagePaths))
 
 # loop over the input images
 for (i, imagePath) in enumerate(imagePaths):
@@ -79,9 +68,6 @@ for (i, imagePath) in enumerate(imagePaths):
 le = LabelEncoder()
 labels = le.fit_transform(labels)
 labels = list(map(lambda x: random.choice([0, 1]) if x != 0 and x != 1 else x, labels))
-
-# REDUCING THE NUMBER OF LABELS BECAUSE OF LACK OF RAM
-labels = labels[:40000]
 
 # scale the input image pixels to the range [0, 1], then transform
 # the labels into vectors in the range [0, num_classes] -- this
@@ -108,7 +94,7 @@ print("[INFO] compiling model...")
 sgd = SGD(lr=0.01)
 model.compile(loss="binary_crossentropy", optimizer=sgd,
               metrics=["accuracy"])
-model.fit(trainData, trainLabels, epochs=50, batch_size=128,
+model.fit(trainData, trainLabels, epochs=500, batch_size=128,
           verbose=1)
 
 # show the accuracy on the testing set
